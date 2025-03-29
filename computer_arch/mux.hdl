@@ -1,0 +1,26 @@
+HIP Mux {
+    IN a, b, sel;
+    OUT out;
+
+    PARTS:
+    // 1) notSel = Not(sel)
+    Nand(a=sel, b=sel, out=notSel);
+
+    // 2) aAndNotSel = a AND notSel
+    //    => NAND(a, notSel) is ¬(a AND notSel)
+    //    => another NAND inverts it back to a AND notSel
+    Nand(a=a, b=notSel, out=aNotSelTemp);
+    Nand(a=aNotSelTemp, b=aNotSelTemp, out=aAndNotSel);
+
+    // 3) bAndSel = b AND sel
+    //    => NAND(b, sel) is ¬(b AND sel)
+    //    => another NAND inverts it back to b AND sel
+    Nand(a=b, b=sel, out=bSelTemp);
+    Nand(a=bSelTemp, b=bSelTemp, out=bAndSel);
+
+    // 4) out = (aAndNotSel) OR (bAndSel)
+    //    => OR(x,y) = NAND(NAND(x,x), NAND(y,y))
+    Nand(a=aAndNotSel, b=aAndNotSel, out=x);
+    Nand(a=bAndSel, b=bAndSel, out=y);
+    Nand(a=x, b=y, out=out);
+}
